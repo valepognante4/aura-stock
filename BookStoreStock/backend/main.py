@@ -1,23 +1,65 @@
+import logging
+import os
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.exc import SQLAlchemyError
+
 from database import engine, Base
-from routers import product_router  # Importás el router que acabamos de armar
+from db_bootstrap import ensure_product_id_sequence
+from models import product as product_model  # noqa: F401 — registra metadatos
+from routers import product_router
 
-Base.metadata.create_all(bind=engine)
+logger = logging.getLogger("aurastock")
 
-app = FastAPI(title="Vortex Inventory API", version="1.0.0")
+DEFAULT_ORIGINS = [
+    "http://localhost:4200",
+    "http://127.0.0.1:4200",
+    "http://localhost:4300",
+    "http://127.0.0.1:4300",
+]
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    try:
+        Base.metadata.create_all(bind=engine)
+        ensure_product_id_sequence()
+        logger.info("Tablas de inventario verificadas/creadas en Oracle.")
+    except SQLAlchemyError as exc:
+        logger.error("No se pudieron inicializar las tablas en Oracle: %s", exc)
+    yield
+
+
+app = FastAPI(title="AuraStock Inventory API", version="1.0.0", lifespan=lifespan)
+
+extra_origins = os.getenv("CORS_ORIGINS", "")
+allow_origins = DEFAULT_ORIGINS + [
+    origin.strip() for origin in extra_origins.split(",") if origin.strip()
+]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:4300", "http://127.0.0.1:4300", "http://localhost:4200", "http://127.0.0.1:4200"],
+    allow_origins=allow_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Registrás el router en la aplicación principal
 app.include_router(product_router.router)
+
 
 @app.get("/")
 def read_root():
-    return {"message": "Bienvenido al backend de Vortex Inventory"}
+    return {"message": "AuraStock API — inventario operativo", "docs": "/docs"}
+
+
+@app.get("/health")
+def health_check():
+    try:
+        with engine.connect() as connection:
+            connection.exec_driver_sql("SELECT 1 FROM DUAL")
+        return {"status": "ok", "database": "connected"}
+    except SQLAlchemyError as exc:
+        return {"status": "degraded", "database": "unavailable", "detail": str(exc)}
