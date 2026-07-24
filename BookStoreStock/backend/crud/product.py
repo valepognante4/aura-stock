@@ -46,3 +46,24 @@ def delete_product(db: Session, product_id: int):
     db.delete(db_product)
     db.commit()
     return True
+
+def bulk_create_products(db: Session, products: list[ProductCreate]):
+    created = 0
+    errors: list[str] = []
+
+    for index, product in enumerate(products, start=1):
+        try:
+            if product.net_price < 0 or product.stock_quantity < 0:
+                errors.append(f"Fila {index}: precio o stock no pueden ser negativos")
+                continue
+            if not product.name.strip():
+                errors.append(f"Fila {index}: el nombre es obligatorio")
+                continue
+
+            create_product(db, product)
+            created += 1
+        except Exception as exc:
+            db.rollback()
+            errors.append(f"Fila {index}: {exc}")
+
+    return {"created": created, "errors": errors}

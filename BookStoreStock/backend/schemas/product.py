@@ -13,3 +13,10 @@ class ProductResponse(ProductCreate):
 
     class Config:
         from_attributes = True
+
+class ProductBulkImport(BaseModel):
+    products: list[ProductCreate]
+
+class ProductBulkImportResult(BaseModel):
+    created: int
+    errors: list[str]
