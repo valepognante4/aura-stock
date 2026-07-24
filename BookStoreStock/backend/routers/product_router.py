@@ -23,3 +23,23 @@ def create_product(product_in: ProductCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail=str(e))
     except SQLAlchemyError as e:
         raise HTTPException(status_code=500, detail="Error de conexión o fallo en la base de datos al guardar.")
+
+@router.put("/{product_id}", response_model=ProductResponse)
+def update_product(product_id: int, product_in: ProductCreate, db: Session = Depends(get_db)):
+    try:
+        updated_product = product_crud.update_product(db, product_id, product_in)
+        if not updated_product:
+            raise HTTPException(status_code=404, detail="Producto no encontrado")
+        return updated_product
+    except SQLAlchemyError as e:
+        raise HTTPException(status_code=500, detail="Error en la base de datos al actualizar.")
+
+@router.delete("/{product_id}")
+def delete_product(product_id: int, db: Session = Depends(get_db)):
+    try:
+        success = product_crud.delete_product(db, product_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Producto no encontrado")
+        return {"message": "Producto eliminado"}
+    except SQLAlchemyError as e:
+        raise HTTPException(status_code=500, detail="Error en la base de datos al eliminar.")

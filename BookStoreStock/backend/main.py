@@ -9,7 +9,9 @@ from sqlalchemy.exc import SQLAlchemyError
 from database import engine, Base
 from db_bootstrap import ensure_product_id_sequence
 from models import product as product_model  # noqa: F401 — registra metadatos
+from models import user as user_model
 from routers import product_router
+from routers import user_router
 
 logger = logging.getLogger("aurastock")
 
@@ -48,6 +50,7 @@ app.add_middleware(
 )
 
 app.include_router(product_router.router)
+app.include_router(user_router.router)
 
 
 @app.get("/")
