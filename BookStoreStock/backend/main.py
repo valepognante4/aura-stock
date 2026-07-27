@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import SQLAlchemyError
 
 from database import engine, Base
-from db_bootstrap import ensure_oracle_sequences
+from db_bootstrap import ensure_oracle_sequences, ensure_user_company_columns
 from models import product as product_model  # noqa: F401 — registra metadatos
 from models import user as user_model
 from routers import product_router
@@ -28,6 +28,7 @@ async def lifespan(app: FastAPI):
     try:
         Base.metadata.create_all(bind=engine)
         ensure_oracle_sequences()
+        ensure_user_company_columns()
         logger.info("Tablas y secuencias Oracle verificadas/creadas.")
     except SQLAlchemyError as exc:
         logger.error("No se pudieron inicializar las tablas en Oracle: %s", exc)

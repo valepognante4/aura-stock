@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from crud import user as user_crud
 from database import get_db
 from db_bootstrap import ensure_oracle_sequences
-from schemas.user import UserCreate, UserLogin, UserResponse
+from schemas.user import UserCreate, UserLogin, UserLogoUpdate, UserResponse
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -47,6 +47,23 @@ def login(user_in: UserLogin, db: Session = Depends(get_db)):
     except HTTPException:
         raise
     except SQLAlchemyError:
+        raise HTTPException(
+            status_code=500,
+            detail="Error de conexión con la base de datos.",
+        )
+
+
+@router.put("/{user_id}/logo", response_model=UserResponse)
+def update_logo(user_id: int, logo_in: UserLogoUpdate, db: Session = Depends(get_db)):
+    try:
+        user = user_crud.update_user_logo(db, user_id, logo_in.company_logo)
+        if not user:
+            raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        return user
+    except HTTPException:
+        raise
+    except SQLAlchemyError:
+        db.rollback()
         raise HTTPException(
             status_code=500,
             detail="Error de conexión con la base de datos.",

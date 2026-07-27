@@ -5,6 +5,7 @@ class UserCreate(BaseModel):
     username: str
     email: EmailStr
     password: str
+    company_name: str
 
 
 class UserLogin(BaseModel):
@@ -18,3 +19,9 @@ class UserResponse(BaseModel):
     id: int
     username: str
     email: str
+    company_name: str
+    company_logo: str | None = None
+
+
+class UserLogoUpdate(BaseModel):
+    company_logo: str

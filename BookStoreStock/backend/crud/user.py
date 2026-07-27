@@ -22,9 +22,28 @@ def create_user(db: Session, user: UserCreate):
         username=user.username,
         email=user.email,
         hashed_password=hashed_password,
+        company_name=user.company_name,
     )
     try:
         db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
+        return db_user
+    except SQLAlchemyError:
+        db.rollback()
+        raise
+
+
+def get_user_by_id(db: Session, user_id: int):
+    return db.query(User).filter(User.id == user_id).first()
+
+
+def update_user_logo(db: Session, user_id: int, company_logo: str):
+    db_user = get_user_by_id(db, user_id)
+    if not db_user:
+        return None
+    db_user.company_logo = company_logo
+    try:
         db.commit()
         db.refresh(db_user)
         return db_user

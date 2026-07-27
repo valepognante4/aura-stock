@@ -53,6 +53,34 @@ def ensure_oracle_sequences() -> None:
     logger.info("Secuencias Oracle verificadas: product_id_seq, user_id_seq.")
 
 
+def ensure_user_company_columns() -> None:
+    """Agrega columnas de empresa a users si la tabla ya existía sin ellas."""
+    ddl = """
+    DECLARE
+      v_count NUMBER;
+    BEGIN
+      SELECT COUNT(*) INTO v_count
+      FROM user_tab_columns
+      WHERE table_name = 'USERS' AND column_name = 'COMPANY_NAME';
+
+      IF v_count = 0 THEN
+        EXECUTE IMMEDIATE 'ALTER TABLE users ADD (company_name VARCHAR2(200) DEFAULT ''Mi Empresa'' NOT NULL)';
+      END IF;
+
+      SELECT COUNT(*) INTO v_count
+      FROM user_tab_columns
+      WHERE table_name = 'USERS' AND column_name = 'COMPANY_LOGO';
+
+      IF v_count = 0 THEN
+        EXECUTE IMMEDIATE 'ALTER TABLE users ADD (company_logo CLOB)';
+      END IF;
+    END;
+    """
+    with engine.begin() as connection:
+        connection.execute(text(ddl))
+    logger.info("Columnas de empresa verificadas en users.")
+
+
 def ensure_product_id_sequence() -> None:
     """Alias retrocompatible."""
     ensure_oracle_sequences()
