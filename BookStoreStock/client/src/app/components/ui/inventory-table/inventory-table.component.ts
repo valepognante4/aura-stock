@@ -2,6 +2,8 @@ import { Component, Input, Output, EventEmitter, ElementRef, ViewChild, HostList
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Product, ProductPayload } from '../../../services/product.service';
+import { detectCsvDelimiter, downloadCsvFile, parseCsvLine } from '../../../utils/csv.util';
+import { formatCurrency } from '../../../utils/currency.util';
 
 export interface InventoryFilters {
   lowStockOnly: boolean;
@@ -18,13 +20,16 @@ export interface InventoryFilters {
     <!-- TOOLBAR -->
     <div class="flex items-center justify-between mb-4">
       <div class="relative w-[300px]">
-        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-txt-dim text-[16px]">⌕</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="absolute left-[11px] top-1/2 -translate-y-1/2 w-[15px] h-[15px] text-txt-dim pointer-events-none">
+          <circle cx="11" cy="11" r="7"/>
+          <path d="m21 21-4.3-4.3"/>
+        </svg>
         <input
           type="text"
           [(ngModel)]="searchTerm"
           (ngModelChange)="onSearchChange()"
           placeholder="Buscar por nombre o descripción..."
-          class="w-full bg-surface border border-border rounded-lg pl-8 pr-4 py-[9px] text-[13px] text-txt-primary focus:outline-none focus:border-accent transition-colors">
+          class="w-full bg-surface border border-border rounded-lg pl-[34px] pr-4 py-[9px] text-[13px] text-txt-primary placeholder:text-txt-dim focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all">
       </div>
       <div class="flex items-center gap-[8px]">
         <div class="relative" #filtersContainer>
@@ -33,10 +38,15 @@ export interface InventoryFilters {
             (click)="toggleFilters($event)"
             [class.bg-surface-2]="showFilters || hasActiveFilters"
             [class.border-accent]="hasActiveFilters"
-            class="px-[14px] py-[9px] rounded-lg border border-border text-[13px] font-semibold text-txt-body hover:bg-surface-2 transition-colors">
-            Filtros ▾
+            class="inline-flex items-center gap-[6px] px-[14px] py-[9px] rounded-lg border border-border text-[13px] font-semibold text-txt-body hover:bg-surface-2 hover:border-border-strong active:scale-[0.98] transition-all duration-150">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="w-[14px] h-[14px]">
+              <path d="M4 6h16"/>
+              <path d="M7 12h10"/>
+              <path d="M10 18h4"/>
+            </svg>
+            Filtros
             @if (hasActiveFilters) {
-              <span class="ml-1 inline-block w-[6px] h-[6px] bg-accent rounded-full align-middle"></span>
+              <span class="w-[6px] h-[6px] bg-accent rounded-full"></span>
             }
           </button>
 
@@ -91,7 +101,7 @@ export interface InventoryFilters {
               <button
                 type="button"
                 (click)="clearFilters()"
-                class="w-full py-2 rounded-lg border border-border text-[12px] font-semibold text-txt-muted hover:bg-surface-2 transition-colors">
+                class="w-full py-2 rounded-lg border border-border text-[12px] font-semibold text-txt-muted hover:bg-surface-2 hover:border-border-strong active:scale-[0.98] transition-all duration-150">
                 Limpiar filtros
               </button>
             </div>
@@ -102,7 +112,12 @@ export interface InventoryFilters {
           type="button"
           (click)="exportCsv()"
           [disabled]="loading || products.length === 0"
-          class="px-[14px] py-[9px] rounded-lg border border-border text-[13px] font-semibold text-txt-body hover:bg-surface-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+          class="inline-flex items-center gap-[6px] px-[14px] py-[9px] rounded-lg border border-border text-[13px] font-semibold text-txt-body hover:bg-surface-2 hover:border-border-strong active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 transition-all duration-150">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="w-[14px] h-[14px]">
+            <path d="M12 3v12"/>
+            <path d="m7 10 5 5 5-5"/>
+            <path d="M5 21h14"/>
+          </svg>
           Exportar CSV
         </button>
 
@@ -111,7 +126,12 @@ export interface InventoryFilters {
           type="button"
           (click)="fileInput.click()"
           [disabled]="loading"
-          class="px-[14px] py-[9px] rounded-lg border border-border text-[13px] font-semibold text-txt-body hover:bg-surface-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+          class="inline-flex items-center gap-[6px] px-[14px] py-[9px] rounded-lg border border-border text-[13px] font-semibold text-txt-body hover:bg-surface-2 hover:border-border-strong active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 transition-all duration-150">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="w-[14px] h-[14px]">
+            <path d="M12 21V9"/>
+            <path d="m7 14 5-5 5 5"/>
+            <path d="M5 3h14"/>
+          </svg>
           Importar
         </button>
 
@@ -119,8 +139,12 @@ export interface InventoryFilters {
           type="button"
           (click)="newProduct.emit()"
           [disabled]="loading"
-          class="px-[14px] py-[9px] rounded-lg bg-accent hover:bg-accent-light disabled:opacity-60 disabled:cursor-not-allowed text-white text-[13px] font-semibold transition-colors border-none ml-[2px]">
-          + Nuevo Producto
+          class="inline-flex items-center gap-[6px] px-[14px] py-[9px] rounded-lg bg-accent hover:bg-accent-light hover:shadow-[0_4px_14px_rgba(79,70,229,0.35)] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-none text-white text-[13px] font-semibold transition-all duration-150 border-none ml-[2px]">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-[14px] h-[14px]">
+            <path d="M12 5v14"/>
+            <path d="M5 12h14"/>
+          </svg>
+          Nuevo Producto
         </button>
       </div>
     </div>
@@ -139,7 +163,7 @@ export interface InventoryFilters {
     }
 
     <!-- TABLE WRAPPER -->
-    <div class="bg-surface border border-border rounded-[12px] overflow-hidden">
+    <div class="bg-surface border border-border/70 rounded-[14px] overflow-hidden shadow-[0_1px_2px_rgba(0,0,0,0.15)]">
       <table class="w-full text-left border-collapse">
         <thead>
           <tr class="border-b border-border">
@@ -157,13 +181,13 @@ export interface InventoryFilters {
             <tr class="group border-b border-border hover:bg-surface-2 transition-colors duration-100 last:border-b-0">
               <td class="py-[13px] px-[16px] text-[13px] font-medium text-txt-primary">{{ p.name }}</td>
               <td class="py-[13px] px-[16px] text-[13px] text-txt-sub truncate max-w-[250px]">{{ p.description }}</td>
-              <td class="py-[13px] px-[16px] text-[13px] font-semibold font-mono tabular-nums text-txt-body">\${{ p.net_price }}</td>
+              <td class="py-[13px] px-[16px] text-[13px] font-semibold font-mono tabular-nums text-txt-body">{{ formatPrice(p.net_price) }}</td>
               <td class="py-[13px] px-[16px]">
                 <span class="inline-block bg-accent-bg text-accent-light px-2 py-0.5 rounded-[4px] text-[11.5px] font-semibold font-mono">
                   {{ p.iva_percentage }}%
                 </span>
               </td>
-              <td class="py-[13px] px-[16px] text-[13px] font-semibold font-mono tabular-nums text-txt-primary">\${{ p.gross_price }}</td>
+              <td class="py-[13px] px-[16px] text-[13px] font-semibold font-mono tabular-nums text-txt-primary">{{ formatPrice(p.gross_price) }}</td>
               <td class="py-[13px] px-[16px]">
                 <div class="flex items-center gap-1.5"
                      [ngClass]="{
@@ -172,15 +196,32 @@ export interface InventoryFilters {
                        'text-success': p.stock_quantity >= 30
                      }">
                   @if (p.stock_quantity < 10) {
-                    <span>⚠</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="w-[12px] h-[12px]">
+                      <path d="M12 4 3 20h18L12 4Z"/>
+                      <path d="M12 10v4"/>
+                      <path d="M12 17h.01"/>
+                    </svg>
                   }
                   <span class="font-mono text-[13px] font-semibold tabular-nums">{{ p.stock_quantity }}</span>
                 </div>
               </td>
               <td class="py-[13px] px-[16px] text-right">
-                <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex items-center justify-end gap-2">
-                  <button type="button" (click)="editProduct.emit(p)" title="Editar" class="text-txt-muted hover:text-accent-light transition-colors text-[14px]">✎</button>
-                  <button type="button" (click)="deleteProduct.emit(p)" title="Eliminar" class="text-txt-muted hover:text-danger transition-colors text-[14px]">🗑</button>
+                <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex items-center justify-end gap-1">
+                  <button type="button" (click)="editProduct.emit(p)" title="Editar" class="p-[6px] rounded-[7px] text-txt-muted hover:text-accent-light hover:bg-accent-bg transition-colors duration-150">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="w-[15px] h-[15px]">
+                      <path d="M12 20h9"/>
+                      <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+                    </svg>
+                  </button>
+                  <button type="button" (click)="deleteProduct.emit(p)" title="Eliminar" class="p-[6px] rounded-[7px] text-txt-muted hover:text-danger hover:bg-danger/10 transition-colors duration-150">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="w-[15px] h-[15px]">
+                      <path d="M3 6h18"/>
+                      <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                      <path d="M10 11v6"/>
+                      <path d="M14 11v6"/>
+                    </svg>
+                  </button>
                 </div>
               </td>
             </tr>
@@ -217,6 +258,8 @@ export class InventoryTableComponent implements OnChanges {
   @Output() importCsv = new EventEmitter<ProductPayload[]>();
 
   @ViewChild('filtersContainer') filtersContainer?: ElementRef<HTMLElement>;
+
+  formatPrice = formatCurrency;
 
   searchTerm = '';
   showFilters = false;
@@ -314,27 +357,20 @@ export class InventoryTableComponent implements OnChanges {
   }
 
   exportCsv(): void {
-    const headers = ['id', 'name', 'description', 'net_price', 'iva_percentage', 'gross_price', 'stock_quantity'];
-    const rows = this.displayProducts.map((p) =>
-      [
+    const rows: (string | number)[][] = [
+      ['id', 'name', 'description', 'net_price', 'iva_percentage', 'gross_price', 'stock_quantity'],
+      ...this.displayProducts.map((p) => [
         p.id,
-        this.escapeCsvField(p.name),
-        this.escapeCsvField(p.description ?? ''),
+        p.name,
+        p.description ?? '',
         p.net_price,
         p.iva_percentage,
         p.gross_price,
         p.stock_quantity,
-      ].join(',')
-    );
+      ]),
+    ];
 
-    const csv = [headers.join(','), ...rows].join('\n');
-    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `inventario_${new Date().toISOString().slice(0, 10)}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
+    downloadCsvFile(`inventario_${new Date().toISOString().slice(0, 10)}.csv`, rows);
   }
 
   onFileSelected(event: Event): void {
@@ -373,39 +409,34 @@ export class InventoryTableComponent implements OnChanges {
     }, 5000);
   }
 
-  private escapeCsvField(value: string): string {
-    if (/[",\n\r]/.test(value)) {
-      return `"${value.replace(/"/g, '""')}"`;
-    }
-    return value;
-  }
-
   private parseCsv(text: string): ProductPayload[] {
-    const lines = text.trim().split(/\r?\n/).filter((line) => line.trim());
+    const lines = text.replace(/^﻿/, '').trim().split(/\r?\n/).filter((line) => line.trim());
     if (lines.length === 0) return [];
 
+    const delimiter = detectCsvDelimiter(lines[0]);
     const headerLine = lines[0].toLowerCase();
-    const hasHeader = headerLine.includes('name') || headerLine.includes('nombre');
+    const headers = parseCsvLine(headerLine, delimiter).map((h) => h.trim().replace(/"/g, ''));
+    const hasHeader = headers.some((h) => h.includes('name') || h.includes('nombre'));
     const dataLines = hasHeader ? lines.slice(1) : lines;
 
     const products: ProductPayload[] = [];
 
     for (const line of dataLines) {
-      const cols = this.parseCsvLine(line);
+      const cols = parseCsvLine(line, delimiter);
       if (cols.length < 4) continue;
 
-      const nameIdx = hasHeader ? this.colIndex(headerLine.split(','), ['name', 'nombre']) : 0;
-      const descIdx = hasHeader ? this.colIndex(headerLine.split(','), ['description', 'descripcion', 'descripción']) : 1;
-      const netIdx = hasHeader ? this.colIndex(headerLine.split(','), ['net_price', 'precio_neto', 'precio neto']) : 2;
-      const ivaIdx = hasHeader ? this.colIndex(headerLine.split(','), ['iva_percentage', 'iva']) : 3;
-      const stockIdx = hasHeader ? this.colIndex(headerLine.split(','), ['stock_quantity', 'stock']) : 4;
+      const nameIdx = hasHeader ? this.colIndex(headers, ['name', 'nombre']) : 0;
+      const descIdx = hasHeader ? this.colIndex(headers, ['description', 'descripcion', 'descripción']) : 1;
+      const netIdx = hasHeader ? this.colIndex(headers, ['net_price', 'precio_neto', 'precio neto']) : 2;
+      const ivaIdx = hasHeader ? this.colIndex(headers, ['iva_percentage', 'iva']) : 3;
+      const stockIdx = hasHeader ? this.colIndex(headers, ['stock_quantity', 'stock']) : 4;
 
       const name = cols[nameIdx >= 0 ? nameIdx : 0]?.trim();
       if (!name) continue;
 
-      const netPrice = Number(cols[netIdx >= 0 ? netIdx : 2]);
-      const iva = ivaIdx >= 0 ? Number(cols[ivaIdx]) : 21;
-      const stock = stockIdx >= 0 ? Number(cols[stockIdx]) : 0;
+      const netPrice = Number(cols[netIdx >= 0 ? netIdx : 2]?.replace(',', '.'));
+      const iva = ivaIdx >= 0 ? Number(cols[ivaIdx]?.replace(',', '.')) : 21;
+      const stock = stockIdx >= 0 ? Number(cols[stockIdx]?.replace(',', '.')) : 0;
 
       if (Number.isNaN(netPrice) || netPrice < 0) continue;
 
@@ -430,28 +461,4 @@ export class InventoryTableComponent implements OnChanges {
     return -1;
   }
 
-  private parseCsvLine(line: string): string[] {
-    const result: string[] = [];
-    let current = '';
-    let inQuotes = false;
-
-    for (let i = 0; i < line.length; i++) {
-      const char = line[i];
-      if (char === '"') {
-        if (inQuotes && line[i + 1] === '"') {
-          current += '"';
-          i++;
-        } else {
-          inQuotes = !inQuotes;
-        }
-      } else if (char === ',' && !inQuotes) {
-        result.push(current);
-        current = '';
-      } else {
-        current += char;
-      }
-    }
-    result.push(current);
-    return result;
-  }
 }

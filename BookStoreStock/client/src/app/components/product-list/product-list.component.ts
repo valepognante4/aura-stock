@@ -18,6 +18,8 @@ import { finalize } from 'rxjs/operators';
 
 import { extractHttpError } from '../../utils/http-error.util';
 
+import { formatCurrency } from '../../utils/currency.util';
+
 
 
 @Component({
@@ -62,15 +64,17 @@ import { extractHttpError } from '../../utils/http-error.util';
 
 
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[14px] mb-[32px]">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px] mb-[32px]">
 
           <app-metric-card
 
             label="Total Productos"
 
+            icon="box"
+
             [value]="totalProductsLabel()"
 
-            detail="↑ 12% vs mes pasado"
+            detail="12% vs mes pasado"
 
             [isPositive]="true">
 
@@ -80,9 +84,11 @@ import { extractHttpError } from '../../utils/http-error.util';
 
             label="Valor del Stock"
 
+            icon="value"
+
             [value]="stockValueLabel()"
 
-            detail="↑ 5.2% vs mes pasado"
+            detail="5.2% vs mes pasado"
 
             [isPositive]="true">
 
@@ -91,6 +97,8 @@ import { extractHttpError } from '../../utils/http-error.util';
           <app-metric-card
 
             label="Bajo Stock"
+
+            icon="alert"
 
             [value]="lowStockLabel()"
 
@@ -104,9 +112,11 @@ import { extractHttpError } from '../../utils/http-error.util';
 
             label="Rotación (30d)"
 
+            icon="cycle"
+
             value="18%"
 
-            detail="↑ 2% vs mes pasado"
+            detail="2% vs mes pasado"
 
             [isPositive]="true">
 
@@ -388,11 +398,7 @@ export class ProductListComponent implements OnInit {
 
     const total = this.products().reduce((sum, p) => sum + p.gross_price * p.stock_quantity, 0);
 
-    return this.products().length > 0
-
-      ? `$${total.toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
-
-      : '—';
+    return this.products().length > 0 ? formatCurrency(total) : '—';
 
   }
 

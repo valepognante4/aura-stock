@@ -5,6 +5,7 @@ import { NavbarDashboardComponent } from '../ui/navbar-dashboard/navbar-dashboar
 import { MetricCardComponent } from '../ui/metric-card/metric-card.component';
 import { Product, ProductService } from '../../services/product.service';
 import { extractHttpError } from '../../utils/http-error.util';
+import { downloadCsvFile } from '../../utils/csv.util';
 
 const LOW_STOCK_THRESHOLD = 10;
 
@@ -188,43 +189,26 @@ export class ReportsComponent implements OnInit {
     const products = this.products();
     if (products.length === 0) return;
 
-    const summaryRows = [
+    const rows: (string | number)[][] = [
       ['Métrica', 'Valor'],
-      ['Total productos', String(products.length)],
-      ['Valor del stock', String(products.reduce((s, p) => s + p.gross_price * p.stock_quantity, 0))],
-      ['Productos bajo stock (< ' + LOW_STOCK_THRESHOLD + ')', String(this.lowStockProducts().length)],
-      ['Productos stock crítico (< 5)', String(products.filter((p) => p.stock_quantity < 5).length)],
-      [''],
+      ['Total productos', products.length],
+      ['Valor del stock', products.reduce((s, p) => s + p.gross_price * p.stock_quantity, 0)],
+      ['Productos bajo stock (< ' + LOW_STOCK_THRESHOLD + ')', this.lowStockProducts().length],
+      ['Productos stock crítico (< 5)', products.filter((p) => p.stock_quantity < 5).length],
+      [],
       ['id', 'name', 'description', 'net_price', 'iva_percentage', 'gross_price', 'stock_quantity', 'valor_en_stock'],
-    ];
-
-    const productRows = products.map((p) =>
-      [
+      ...products.map((p) => [
         p.id,
-        this.escapeCsvField(p.name),
-        this.escapeCsvField(p.description ?? ''),
+        p.name,
+        p.description ?? '',
         p.net_price,
         p.iva_percentage,
         p.gross_price,
         p.stock_quantity,
         p.gross_price * p.stock_quantity,
-      ].join(',')
-    );
+      ]),
+    ];
 
-    const csv = [...summaryRows.map((r) => r.join(',')), ...productRows].join('\n');
-    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `reporte_inventario_${new Date().toISOString().slice(0, 10)}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
-  }
-
-  private escapeCsvField(value: string): string {
-    if (value.includes(',') || value.includes('"') || value.includes('\n')) {
-      return `"${value.replace(/"/g, '""')}"`;
-    }
-    return value;
+    downloadCsvFile(`reporte_inventario_${new Date().toISOString().slice(0, 10)}.csv`, rows);
   }
 }
