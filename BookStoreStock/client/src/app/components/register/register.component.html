@@ -1,0 +1,29 @@
+<div class="auth-container">
+  <div class="auth-card card">
+    <h2 class="title">Registro</h2>
+    <p class="subtitle">Crea una cuenta nueva.</p>
+    
+    <form (submit)="onRegister($event)">
+      <div class="form-group">
+        <label>Nombre Completo</label>
+        <input type="text" placeholder="Ej: Juan Pérez" required>
+      </div>
+
+      <div class="form-group">
+        <label>Usuario</label>
+        <input type="text" placeholder="Elige un usuario" required>
+      </div>
+      
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" placeholder="*********" required>
+      </div>
+      
+      <button type="submit" class="btn btn-secondary btn-full">Crear Cuenta</button>
+    </form>
+    
+    <div class="footer-links">
+      <span>¿Ya tienes cuenta? <a routerLink="/login">Entrar</a></span>
+    </div>
+  </div>
+</div>

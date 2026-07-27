@@ -1,0 +1,36 @@
+<div class="dashboard-container container">
+  <div class="header-section">
+    <h2 class="page-title">Inventario</h2>
+    <button class="btn">Nuevo Producto</button>
+  </div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Descripción</th>
+          <th>Precio Neto</th>
+          <th>IVA</th>
+          <th>Precio Bruto</th>
+          <th>Stock</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of products">
+          <td class="font-bold">{{ p.name }}</td>
+          <td>{{ p.description }}</td>
+          <td>${{ p.net_price }}</td>
+          <td>{{ p.iva_percentage }}%</td>
+          <td class="price-highlight">${{ p.gross_price }}</td>
+          <td>
+            <span class="stock-badge" [class.low-stock]="p.stock_quantity < 10">{{ p.stock_quantity }}</span>
+          </td>
+        </tr>
+        <tr *ngIf="products.length === 0">
+          <td colspan="6" class="empty-state">No hay productos en el inventario.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

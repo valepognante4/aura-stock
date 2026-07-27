@@ -1,0 +1,24 @@
+<div class="auth-container">
+  <div class="auth-card card">
+    <h2 class="title">Entrar</h2>
+    <p class="subtitle">Ingresa tus credenciales.</p>
+    
+    <form (submit)="onLogin($event)">
+      <div class="form-group">
+        <label>Usuario</label>
+        <input type="text" placeholder="Ej: admin123" required>
+      </div>
+      
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" placeholder="*********" required>
+      </div>
+      
+      <button type="submit" class="btn btn-full">Iniciar Sesión</button>
+    </form>
+    
+    <div class="footer-links">
+      <span>¿No tienes cuenta? <a routerLink="/register">Regístrate</a></span>
+    </div>
+  </div>
+</div>
