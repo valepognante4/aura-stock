@@ -52,19 +52,19 @@ import { formatCurrency } from '../../utils/currency.util';
 
 
 
-      <main class="flex-1 w-full max-w-[1200px] mx-auto px-[28px] py-[32px]">
+      <main class="flex-1 w-full max-w-[1220px] mx-auto px-[32px] py-[40px]">
 
-        <div class="mb-[24px]">
+        <div class="mb-[28px]">
 
-          <h1 class="text-[22px] font-bold tracking-[-0.025em] text-txt-primary">Control de Stock</h1>
+          <h1 class="text-[23px] font-bold tracking-[-0.025em] text-txt-primary">Control de Stock</h1>
 
-          <p class="text-[14px] text-txt-muted">Resumen general y gestión de productos.</p>
+          <p class="text-[14px] text-txt-muted mt-[2px]">Resumen general y gestión de productos.</p>
 
         </div>
 
 
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px] mb-[32px]">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[18px] mb-[36px]">
 
           <app-metric-card
 

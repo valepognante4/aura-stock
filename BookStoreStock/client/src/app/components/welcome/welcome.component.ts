@@ -64,25 +64,25 @@ import { FeatureCardComponent } from '../ui/feature-card/feature-card.component'
         
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[14px]">
           <app-feature-card 
-            icon="⚡" 
+            icon="sync" 
             title="Sincronización en tiempo real" 
             description="Cambios reflejados instantáneamente en todos tus dispositivos sin recargar.">
           </app-feature-card>
           
           <app-feature-card 
-            icon="📊" 
+            icon="tax" 
             title="Cálculo de IVA integrado" 
             description="Asigna tramos impositivos y visualiza márgenes netos y brutos al vuelo.">
           </app-feature-card>
           
           <app-feature-card 
-            icon="🔔" 
+            icon="bell" 
             title="Alertas de Stock" 
             description="Recibe notificaciones automáticas cuando tus productos alcancen niveles críticos.">
           </app-feature-card>
           
           <app-feature-card 
-            icon="🛡️" 
+            icon="shield" 
             title="Seguridad de Nivel Empresarial" 
             description="Tus datos están encriptados y respaldados continuamente.">
           </app-feature-card>

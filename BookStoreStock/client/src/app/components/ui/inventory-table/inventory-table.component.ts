@@ -18,7 +18,7 @@ export interface InventoryFilters {
   imports: [CommonModule, FormsModule],
   template: `
     <!-- TOOLBAR -->
-    <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center justify-between mb-[20px]">
       <div class="relative w-[300px]">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="absolute left-[11px] top-1/2 -translate-y-1/2 w-[15px] h-[15px] text-txt-dim pointer-events-none">
           <circle cx="11" cy="11" r="7"/>
@@ -139,7 +139,7 @@ export interface InventoryFilters {
           type="button"
           (click)="newProduct.emit()"
           [disabled]="loading"
-          class="inline-flex items-center gap-[6px] px-[14px] py-[9px] rounded-lg bg-accent hover:bg-accent-light hover:shadow-[0_4px_14px_rgba(79,70,229,0.35)] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-none text-white text-[13px] font-semibold transition-all duration-150 border-none ml-[2px]">
+          class="inline-flex items-center gap-[6px] px-[16px] py-[9px] rounded-lg bg-accent hover:bg-accent-light hover:shadow-[0_4px_14px_rgba(15,156,142,0.35)] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-none text-white text-[13px] font-semibold transition-all duration-150 border-none ml-[4px]">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-[14px] h-[14px]">
             <path d="M12 5v14"/>
             <path d="M5 12h14"/>
@@ -163,32 +163,32 @@ export interface InventoryFilters {
     }
 
     <!-- TABLE WRAPPER -->
-    <div class="bg-surface border border-border/70 rounded-[14px] overflow-hidden shadow-[0_1px_2px_rgba(0,0,0,0.15)]">
+    <div class="bg-surface border border-border rounded-[14px] overflow-hidden shadow-[0_1px_2px_rgba(0,0,0,0.15)]">
       <table class="w-full text-left border-collapse">
         <thead>
           <tr class="border-b border-border">
-            <th class="py-[11px] px-[16px] text-[10.5px] font-semibold uppercase tracking-[0.07em] text-txt-dim w-[22%]">Nombre</th>
-            <th class="py-[11px] px-[16px] text-[10.5px] font-semibold uppercase tracking-[0.07em] text-txt-dim w-[30%]">Descripción</th>
-            <th class="py-[11px] px-[16px] text-[10.5px] font-semibold uppercase tracking-[0.07em] text-txt-dim w-[12%]">Precio Neto</th>
-            <th class="py-[11px] px-[16px] text-[10.5px] font-semibold uppercase tracking-[0.07em] text-txt-dim w-[8%]">IVA</th>
-            <th class="py-[11px] px-[16px] text-[10.5px] font-semibold uppercase tracking-[0.07em] text-txt-dim w-[12%]">Precio Bruto</th>
-            <th class="py-[11px] px-[16px] text-[10.5px] font-semibold uppercase tracking-[0.07em] text-txt-dim w-[8%]">Stock</th>
-            <th class="py-[11px] px-[16px] text-[10.5px] font-semibold uppercase tracking-[0.07em] text-txt-dim w-[8%] text-right">Acciones</th>
+            <th class="py-[14px] px-[20px] text-[10.5px] font-semibold uppercase tracking-[0.07em] text-txt-dim w-[22%]">Nombre</th>
+            <th class="py-[14px] px-[20px] text-[10.5px] font-semibold uppercase tracking-[0.07em] text-txt-dim w-[30%]">Descripción</th>
+            <th class="py-[14px] px-[20px] text-[10.5px] font-semibold uppercase tracking-[0.07em] text-txt-dim w-[12%]">Precio Neto</th>
+            <th class="py-[14px] px-[20px] text-[10.5px] font-semibold uppercase tracking-[0.07em] text-txt-dim w-[8%]">IVA</th>
+            <th class="py-[14px] px-[20px] text-[10.5px] font-semibold uppercase tracking-[0.07em] text-txt-dim w-[12%]">Precio Bruto</th>
+            <th class="py-[14px] px-[20px] text-[10.5px] font-semibold uppercase tracking-[0.07em] text-txt-dim w-[8%]">Stock</th>
+            <th class="py-[14px] px-[20px] text-[10.5px] font-semibold uppercase tracking-[0.07em] text-txt-dim w-[8%] text-right">Acciones</th>
           </tr>
         </thead>
         <tbody>
           @for (p of displayProducts; track p.id) {
             <tr class="group border-b border-border hover:bg-surface-2 transition-colors duration-100 last:border-b-0">
-              <td class="py-[13px] px-[16px] text-[13px] font-medium text-txt-primary">{{ p.name }}</td>
-              <td class="py-[13px] px-[16px] text-[13px] text-txt-sub truncate max-w-[250px]">{{ p.description }}</td>
-              <td class="py-[13px] px-[16px] text-[13px] font-semibold font-mono tabular-nums text-txt-body">{{ formatPrice(p.net_price) }}</td>
-              <td class="py-[13px] px-[16px]">
+              <td class="py-[16px] px-[20px] text-[13px] font-medium text-txt-primary">{{ p.name }}</td>
+              <td class="py-[16px] px-[20px] text-[13px] text-txt-sub truncate max-w-[250px]">{{ p.description }}</td>
+              <td class="py-[16px] px-[20px] text-[13px] font-semibold font-mono tabular-nums text-txt-body">{{ formatPrice(p.net_price) }}</td>
+              <td class="py-[16px] px-[20px]">
                 <span class="inline-block bg-accent-bg text-accent-light px-2 py-0.5 rounded-[4px] text-[11.5px] font-semibold font-mono">
                   {{ p.iva_percentage }}%
                 </span>
               </td>
-              <td class="py-[13px] px-[16px] text-[13px] font-semibold font-mono tabular-nums text-txt-primary">{{ formatPrice(p.gross_price) }}</td>
-              <td class="py-[13px] px-[16px]">
+              <td class="py-[16px] px-[20px] text-[13px] font-semibold font-mono tabular-nums text-txt-primary">{{ formatPrice(p.gross_price) }}</td>
+              <td class="py-[16px] px-[20px]">
                 <div class="flex items-center gap-1.5"
                      [ngClass]="{
                        'text-danger': p.stock_quantity < 10,
@@ -205,7 +205,7 @@ export interface InventoryFilters {
                   <span class="font-mono text-[13px] font-semibold tabular-nums">{{ p.stock_quantity }}</span>
                 </div>
               </td>
-              <td class="py-[13px] px-[16px] text-right">
+              <td class="py-[16px] px-[20px] text-right">
                 <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex items-center justify-end gap-1">
                   <button type="button" (click)="editProduct.emit(p)" title="Editar" class="p-[6px] rounded-[7px] text-txt-muted hover:text-accent-light hover:bg-accent-bg transition-colors duration-150">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="w-[15px] h-[15px]">
@@ -241,7 +241,7 @@ export interface InventoryFilters {
       </table>
 
       <!-- TABLE FOOTER -->
-      <div class="px-[16px] py-[12px] flex justify-between items-center bg-surface border-t border-border">
+      <div class="px-[20px] py-[14px] flex justify-between items-center bg-surface border-t border-border">
         <span class="text-[12px] text-txt-dim">
           Mostrando {{ displayProducts.length }} de {{ products.length }} productos
         </span>

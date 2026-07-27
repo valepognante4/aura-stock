@@ -8,12 +8,12 @@ export type MetricIcon = 'box' | 'value' | 'alert' | 'cycle';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="group bg-surface border border-border/70 rounded-[14px] py-[18px] px-[20px] transition-all duration-200 hover:border-border-strong hover:shadow-[0_6px_20px_rgba(0,0,0,0.22)]">
-      <div class="flex items-start justify-between mb-[14px]">
+    <div class="group bg-surface border border-border rounded-[16px] py-[20px] px-[22px] transition-all duration-200 hover:border-border-strong hover:shadow-[0_8px_24px_rgba(0,0,0,0.22)]">
+      <div class="flex items-start justify-between mb-[16px]">
         <span class="text-[10.5px] uppercase tracking-[0.09em] text-txt-dim font-semibold leading-tight pt-1">
           {{ label }}
         </span>
-        <div class="shrink-0 flex items-center justify-center w-[34px] h-[34px] rounded-[9px] bg-surface-2 border border-border text-txt-sub group-hover:text-accent-light group-hover:border-accent-border transition-colors duration-200">
+        <div class="shrink-0 flex items-center justify-center w-[36px] h-[36px] rounded-[10px] bg-surface-2 border border-border text-txt-sub group-hover:text-accent-light group-hover:border-accent-border transition-colors duration-200">
           @switch (icon) {
             @case ('box') {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="w-[17px] h-[17px]">
@@ -47,7 +47,7 @@ export type MetricIcon = 'box' | 'value' | 'alert' | 'cycle';
           }
         </div>
       </div>
-      <div class="text-[23px] font-bold text-txt-primary tabular-nums leading-none mb-[10px]">
+      <div class="text-[25px] font-bold text-txt-primary tabular-nums leading-none mb-[12px]">
         {{ value }}
       </div>
       <div class="inline-flex items-center gap-[6px] text-[11.5px] font-medium" [ngClass]="isPositive ? 'text-success' : 'text-danger'">
