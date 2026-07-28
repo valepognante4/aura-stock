@@ -46,14 +46,15 @@ def send_reset_email(to_email: str, token: str) -> None:
         body {{ font-family: 'Segoe UI', Arial, sans-serif; background: #0f0f11; margin: 0; padding: 0; }}
         .wrapper {{ max-width: 520px; margin: 40px auto; background: #18181b; border-radius: 16px;
                     border: 1px solid #27272a; overflow: hidden; }}
-        .header {{ background: linear-gradient(135deg, #7c3aed, #a855f7);
+        .header {{ background: linear-gradient(135deg, #0F9C8E, #2AB6C9);
                    padding: 32px 40px; text-align: center; }}
         .header h1 {{ color: #fff; margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }}
         .body {{ padding: 36px 40px; }}
         .body p {{ color: #a1a1aa; font-size: 15px; line-height: 1.6; margin: 0 0 20px; }}
-        .btn {{ display: inline-block; background: linear-gradient(135deg, #7c3aed, #a855f7);
+        .btn {{ display: inline-block; background: linear-gradient(135deg, #0F9C8E, #2AB6C9);
                 color: #fff; text-decoration: none; padding: 14px 32px; border-radius: 8px;
-                font-weight: 600; font-size: 15px; }}
+                font-weight: 600; font-size: 15px; letter-spacing: 0.01em;
+                box-shadow: 0 4px 16px rgba(15,156,142,0.35); }}
         .note {{ font-size: 12px !important; color: #71717a !important; margin-top: 28px !important; }}
         .footer {{ padding: 20px 40px; border-top: 1px solid #27272a; text-align: center; }}
         .footer p {{ color: #52525b; font-size: 12px; margin: 0; }}
@@ -75,7 +76,7 @@ def send_reset_email(to_email: str, token: str) -> None:
           </p>
           <p class="note">
             Si el botón no funciona, copiá y pegá este enlace en tu navegador:<br>
-            <span style="color:#a855f7">{reset_link}</span>
+            <span style="color:#34D6C4">{reset_link}</span>
           </p>
         </div>
         <div class="footer">

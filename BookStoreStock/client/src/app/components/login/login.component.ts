@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -23,12 +23,12 @@ import { AuthService } from '../../services/auth.service';
 
     /* ── Modal card ── */
     .modal-card {
-      background: #18181b;
-      border: 1px solid #3f3f46;
+      background: #12151B;
+      border: 1px solid rgba(255,255,255,0.07);
       border-radius: 20px;
       padding: 36px 32px 32px;
       width: 100%; max-width: 420px;
-      box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(124,58,237,0.12);
+      box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(15,156,142,0.10);
       animation: slideUp 0.25s cubic-bezier(0.34,1.56,0.64,1);
       position: relative;
     }
@@ -37,71 +37,73 @@ import { AuthService } from '../../services/auth.service';
     /* ── Modal close btn ── */
     .modal-close {
       position: absolute; top: 16px; right: 16px;
-      background: #27272a; border: none; color: #a1a1aa;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); color: #69727D;
       width: 32px; height: 32px; border-radius: 8px;
       cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center;
       transition: background 0.15s, color 0.15s;
     }
-    .modal-close:hover { background: #3f3f46; color: #fff; }
+    .modal-close:hover { background: rgba(255,255,255,0.10); color: #F3F5F7; }
 
-    /* ── Modal title ── */
+    /* ── Modal icon ── */
     .modal-icon {
       width: 52px; height: 52px; border-radius: 14px;
-      background: linear-gradient(135deg,#7c3aed22,#a855f722);
-      border: 1px solid #7c3aed44;
+      background: rgba(15,156,142,0.12);
+      border: 1px solid rgba(15,156,142,0.25);
       display: flex; align-items: center; justify-content: center;
       font-size: 22px; margin: 0 auto 20px;
+      box-shadow: 0 4px 16px rgba(15,156,142,0.12);
     }
-    .modal-title { font-size: 20px; font-weight: 700; color: #f4f4f5; text-align: center; margin: 0 0 6px; }
-    .modal-subtitle { font-size: 13px; color: #71717a; text-align: center; margin: 0 0 24px; line-height: 1.5; }
+    .modal-title { font-size: 20px; font-weight: 700; color: #F3F5F7; text-align: center; margin: 0 0 6px; }
+    .modal-subtitle { font-size: 13px; color: #69727D; text-align: center; margin: 0 0 24px; line-height: 1.5; }
 
     /* ── Modal input ── */
     .modal-input {
       width: 100%; box-sizing: border-box;
-      background: #09090b; border: 1.5px solid #27272a;
+      background: #0D1015; border: 1.5px solid rgba(255,255,255,0.07);
       border-radius: 10px; padding: 12px 14px;
-      font-size: 14px; color: #f4f4f5;
+      font-size: 14px; color: #F3F5F7;
       outline: none; transition: border-color 0.15s, box-shadow 0.15s;
     }
-    .modal-input::placeholder { color: #52525b; }
-    .modal-input:focus { border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124,58,237,0.18); }
-    .modal-input.error-input { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,0.15); }
+    .modal-input::placeholder { color: #4B525C; }
+    .modal-input:focus { border-color: #0F9C8E; box-shadow: 0 0 0 3px rgba(15,156,142,0.18); }
+    .modal-input.error-input { border-color: #F87171; box-shadow: 0 0 0 3px rgba(248,113,113,0.15); }
 
     /* ── Error / success messages ── */
     .modal-error {
       display: flex; align-items: center; gap: 8px;
-      background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25);
+      background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.22);
       border-radius: 8px; padding: 10px 12px;
-      color: #fca5a5; font-size: 13px; margin-top: 10px;
+      color: #FCA5A5; font-size: 13px; margin-top: 10px;
     }
     .modal-success {
       display: flex; align-items: flex-start; gap: 10px;
-      background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.22);
+      background: rgba(15,156,142,0.08); border: 1px solid rgba(15,156,142,0.22);
       border-radius: 10px; padding: 14px 16px;
-      color: #86efac; font-size: 13.5px; line-height: 1.55;
+      color: #34D6C4; font-size: 13.5px; line-height: 1.55;
     }
 
     /* ── Submit button ── */
     .modal-btn {
       width: 100%; margin-top: 18px;
-      background: linear-gradient(135deg, #7c3aed, #a855f7);
+      background: linear-gradient(135deg, #0F9C8E, #2AB6C9);
       border: none; border-radius: 10px;
       color: #fff; font-weight: 600; font-size: 14px;
       padding: 13px; cursor: pointer;
-      transition: opacity 0.15s, transform 0.1s;
+      transition: opacity 0.15s, transform 0.1s, box-shadow 0.15s;
+      box-shadow: 0 4px 18px rgba(15,156,142,0.28);
     }
-    .modal-btn:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+    .modal-btn:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 6px 24px rgba(15,156,142,0.38); }
     .modal-btn:active:not(:disabled) { transform: translateY(0); }
-    .modal-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .modal-btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
 
     /* ── Forgot link ── */
     .forgot-link {
       background: none; border: none; padding: 0;
-      color: #7c3aed; font-size: 13px; cursor: pointer;
+      color: #0F9C8E; font-size: 13px; cursor: pointer;
       text-decoration: underline; text-underline-offset: 2px;
       transition: color 0.15s;
     }
-    .forgot-link:hover { color: #a855f7; }
+    .forgot-link:hover { color: #34D6C4; }
 
     /* ── Spinner ── */
     .spinner {
@@ -238,7 +240,7 @@ export class LoginComponent {
   forgotSuccess = false;
   forgotLoading = false;
 
-  constructor(private router: Router, private authService: AuthService) {}
+  constructor(private router: Router, private authService: AuthService, private cdr: ChangeDetectorRef) {}
 
   // ── Login logic ────────────────────────────────────────────────────────────
   onLogin(event: Event) {
@@ -309,6 +311,7 @@ export class LoginComponent {
       next: () => {
         this.forgotLoading = false;
         this.forgotSuccess = true;
+        this.cdr.markForCheck();
       },
       error: (err) => {
         this.forgotLoading = false;
@@ -316,6 +319,7 @@ export class LoginComponent {
         this.forgotError = typeof detail === 'string'
           ? detail
           : 'Ocurrió un error al procesar la solicitud. Intentá de nuevo.';
+        this.cdr.markForCheck();
       }
     });
   }
