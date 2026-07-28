@@ -174,17 +174,16 @@ import { AuthService } from '../../services/auth.service';
         </p>
 
         <!-- Estado de éxito -->
-        <div *ngIf="forgotSuccess" class="modal-success">
+        <div *ngIf="forgotSuccessMsg" class="modal-success mb-4">
           <span style="font-size: 20px; flex-shrink:0">✅</span>
           <div>
-            <strong style="display:block; margin-bottom:4px">¡Correo enviado!</strong>
-            Si tu dirección está registrada, recibirás el enlace de recuperación en los próximos minutos.
-            Revisá también tu carpeta de spam.
+            <strong style="display:block; margin-bottom:4px">¡Éxito!</strong>
+            {{ forgotSuccessMsg }}
           </div>
         </div>
 
-        <!-- Formulario (se oculta tras el éxito) -->
-        <ng-container *ngIf="!forgotSuccess">
+        <!-- Formulario (siempre visible) -->
+        <ng-container>
           <div class="flex flex-col gap-1.5">
             <label style="font-size:13px; font-weight:500; color:#a1a1aa">Correo electrónico</label>
             <input
@@ -237,7 +236,7 @@ export class LoginComponent {
   showForgotModal = false;
   forgotEmail = '';
   forgotError = '';
-  forgotSuccess = false;
+  forgotSuccessMsg = '';
   forgotLoading = false;
 
   constructor(private router: Router, private authService: AuthService, private cdr: ChangeDetectorRef) {}
@@ -263,7 +262,7 @@ export class LoginComponent {
   openForgotModal() {
     this.forgotEmail = '';
     this.forgotError = '';
-    this.forgotSuccess = false;
+    this.forgotSuccessMsg = '';
     this.forgotLoading = false;
     this.showForgotModal = true;
   }
@@ -285,6 +284,9 @@ export class LoginComponent {
     if (this.forgotError) {
       this.forgotError = '';
     }
+    if (this.forgotSuccessMsg) {
+      this.forgotSuccessMsg = '';
+    }
   }
 
   /** Valida el email y llama al backend */
@@ -305,12 +307,13 @@ export class LoginComponent {
     }
 
     this.forgotError = '';
+    this.forgotSuccessMsg = '';
     this.forgotLoading = true;
 
     this.authService.forgotPassword(email).subscribe({
       next: () => {
         this.forgotLoading = false;
-        this.forgotSuccess = true;
+        this.forgotSuccessMsg = '¡Correo enviado con éxito! Revisa tu bandeja de entrada.';
         this.cdr.markForCheck();
       },
       error: (err) => {
