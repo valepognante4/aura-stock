@@ -9,7 +9,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from database import engine, Base
 from db_bootstrap import ensure_oracle_sequences, ensure_user_company_columns
 from models import product as product_model  # noqa: F401 — registra metadatos
-from models import user as user_model
+from models import user as user_model  # noqa: F401 — registra User y PasswordResetToken
 from routers import product_router
 from routers import user_router
 

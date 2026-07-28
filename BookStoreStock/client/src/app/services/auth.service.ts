@@ -42,6 +42,14 @@ export class AuthService {
     );
   }
 
+  forgotPassword(email: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}forgot-password`, { email });
+  }
+
+  resetPassword(token: string, new_password: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}reset-password`, { token, new_password });
+  }
+
   updateLogo(userId: number, companyLogo: string): Observable<UserResponse> {
     return this.http.put<UserResponse>(`${this.apiUrl}${userId}/logo`, { company_logo: companyLogo }).pipe(
       tap((user) => this.saveSession(user))

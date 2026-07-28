@@ -25,3 +25,12 @@ class UserResponse(BaseModel):
 
 class UserLogoUpdate(BaseModel):
     company_logo: str
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str

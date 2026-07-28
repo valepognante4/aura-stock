@@ -6,26 +6,26 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        page: '#0B0E14',
-        surface: '#141720',
-        'surface-2': '#0F131B',
+        page: '#0A0C10',
+        surface: '#12151B',
+        'surface-2': '#0D1015',
         border: {
-          DEFAULT: '#1E2330',
-          strong: '#2D3448'
+          DEFAULT: 'rgba(255, 255, 255, 0.07)',
+          strong: 'rgba(255, 255, 255, 0.14)'
         },
         txt: {
-          primary: '#F1F5F9',
-          body: '#E2E8F0',
-          sub: '#94A3B8',
-          muted: '#64748B',
-          dim: '#475569',
-          faint: '#334155'
+          primary: '#F3F5F7',
+          body: '#DDE2E8',
+          sub: '#98A2AE',
+          muted: '#69727D',
+          dim: '#4B525C',
+          faint: '#333941'
         },
         accent: {
-          DEFAULT: '#4F46E5',
-          light: '#818CF8',
-          bg: 'rgba(79, 70, 229, 0.12)',
-          border: 'rgba(79, 70, 229, 0.28)'
+          DEFAULT: '#0F9C8E',
+          light: '#34D6C4',
+          bg: 'rgba(15, 156, 142, 0.12)',
+          border: 'rgba(15, 156, 142, 0.28)'
         },
         success: {
           DEFAULT: '#4ADE80',
@@ -48,8 +48,8 @@ module.exports = {
         'modal': '0 24px 80px rgba(0,0,0,0.60)'
       },
       backgroundImage: {
-        'gradient-user': 'linear-gradient(135deg, #4F46E5, #7C3AED)',
-        'gradient-cta': 'linear-gradient(135deg, rgba(79,70,229,0.18) 0%, rgba(124,58,237,0.10) 100%)',
+        'gradient-user': 'linear-gradient(135deg, #0F9C8E, #2AB6C9)',
+        'gradient-cta': 'linear-gradient(135deg, rgba(15,156,142,0.18) 0%, rgba(42,182,201,0.10) 100%)',
       }
     },
   },

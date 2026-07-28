@@ -1,0 +1,2 @@
+# Ignorar el archivo de variables de entorno con credenciales sensibles
+BookStoreStock/backend/.env
