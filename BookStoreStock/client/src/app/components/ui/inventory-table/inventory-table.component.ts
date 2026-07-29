@@ -2,8 +2,9 @@ import { Component, Input, Output, EventEmitter, ElementRef, ViewChild, HostList
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Product, ProductPayload } from '../../../services/product.service';
-import { detectCsvDelimiter, downloadCsvFile, parseCsvLine } from '../../../utils/csv.util';
+import { detectCsvDelimiter, parseCsvLine } from '../../../utils/csv.util';
 import { formatCurrency } from '../../../utils/currency.util';
+import { downloadExcelFile, ExcelColumn } from '../../../utils/excel.util';
 
 export interface InventoryFilters {
   lowStockOnly: boolean;
@@ -110,7 +111,7 @@ export interface InventoryFilters {
 
         <button
           type="button"
-          (click)="exportCsv()"
+          (click)="exportExcel()"
           [disabled]="loading || products.length === 0"
           class="inline-flex items-center gap-[6px] px-[14px] py-[9px] rounded-lg border border-border text-[13px] font-semibold text-txt-body hover:bg-surface-2 hover:border-border-strong active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 transition-all duration-150">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="w-[14px] h-[14px]">
@@ -118,7 +119,7 @@ export interface InventoryFilters {
             <path d="m7 10 5 5 5-5"/>
             <path d="M5 21h14"/>
           </svg>
-          Exportar CSV
+          Exportar Excel
         </button>
 
         <input #fileInput type="file" accept=".csv,text/csv" class="hidden" (change)="onFileSelected($event)">
@@ -356,21 +357,28 @@ export class InventoryTableComponent implements OnChanges {
     this.applyFilters();
   }
 
-  exportCsv(): void {
-    const rows: (string | number)[][] = [
-      ['id', 'name', 'description', 'net_price', 'iva_percentage', 'gross_price', 'stock_quantity'],
-      ...this.displayProducts.map((p) => [
-        p.id,
-        p.name,
-        p.description ?? '',
-        p.net_price,
-        p.iva_percentage,
-        p.gross_price,
-        p.stock_quantity,
-      ]),
+  async exportExcel(): Promise<void> {
+    const columns: ExcelColumn[] = [
+      { header: 'ID', key: 'id', width: 10 },
+      { header: 'Nombre', key: 'name', width: 30 },
+      { header: 'Descripción', key: 'description', width: 40 },
+      { header: 'Precio Neto', key: 'net_price', width: 15 },
+      { header: 'IVA (%)', key: 'iva', width: 10 },
+      { header: 'Precio Bruto', key: 'gross_price', width: 15 },
+      { header: 'Stock', key: 'stock', width: 10 },
     ];
 
-    downloadCsvFile(`inventario_${new Date().toISOString().slice(0, 10)}.csv`, rows);
+    const data = this.displayProducts.map((p) => ({
+      id: p.id,
+      name: p.name,
+      description: p.description ?? '',
+      net_price: this.formatPrice(p.net_price),
+      iva: p.iva_percentage,
+      gross_price: this.formatPrice(p.gross_price),
+      stock: p.stock_quantity,
+    }));
+
+    await downloadExcelFile(`inventario_${new Date().toISOString().slice(0, 10)}.xlsx`, 'Inventario', columns, data);
   }
 
   onFileSelected(event: Event): void {

@@ -5,7 +5,8 @@ import { NavbarDashboardComponent } from '../ui/navbar-dashboard/navbar-dashboar
 import { MetricCardComponent } from '../ui/metric-card/metric-card.component';
 import { Product, ProductService } from '../../services/product.service';
 import { extractHttpError } from '../../utils/http-error.util';
-import { downloadCsvFile } from '../../utils/csv.util';
+import { formatCurrency } from '../../utils/currency.util';
+import { downloadExcelFileFromRows } from '../../utils/excel.util';
 
 const LOW_STOCK_THRESHOLD = 10;
 
@@ -28,7 +29,7 @@ const LOW_STOCK_THRESHOLD = 10;
             (click)="exportReport()"
             [disabled]="products().length === 0 || isLoading()"
             class="shrink-0 px-4 py-2 rounded-[8px] bg-accent hover:bg-accent-light text-white text-[13px] font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-            Exportar reporte CSV
+            Exportar reporte Excel
           </button>
         </div>
 
@@ -192,23 +193,23 @@ export class ReportsComponent implements OnInit {
     const rows: (string | number)[][] = [
       ['Métrica', 'Valor'],
       ['Total productos', products.length],
-      ['Valor del stock', products.reduce((s, p) => s + p.gross_price * p.stock_quantity, 0)],
+      ['Valor del stock', formatCurrency(products.reduce((s, p) => s + p.gross_price * p.stock_quantity, 0))],
       ['Productos bajo stock (< ' + LOW_STOCK_THRESHOLD + ')', this.lowStockProducts().length],
       ['Productos stock crítico (< 5)', products.filter((p) => p.stock_quantity < 5).length],
       [],
-      ['id', 'name', 'description', 'net_price', 'iva_percentage', 'gross_price', 'stock_quantity', 'valor_en_stock'],
+      ['ID', 'Nombre', 'Descripción', 'Precio Neto', 'IVA (%)', 'Precio Bruto', 'Stock', 'Valor en Stock'],
       ...products.map((p) => [
         p.id,
         p.name,
         p.description ?? '',
-        p.net_price,
+        formatCurrency(p.net_price),
         p.iva_percentage,
-        p.gross_price,
+        formatCurrency(p.gross_price),
         p.stock_quantity,
-        p.gross_price * p.stock_quantity,
+        formatCurrency(p.gross_price * p.stock_quantity),
       ]),
     ];
 
-    downloadCsvFile(`reporte_inventario_${new Date().toISOString().slice(0, 10)}.csv`, rows);
+    downloadExcelFileFromRows(`reporte_inventario_${new Date().toISOString().slice(0, 10)}.xlsx`, 'Reporte', rows);
   }
 }
