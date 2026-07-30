@@ -13,6 +13,12 @@ from models import user as user_model  # noqa: F401 — registra User y Password
 from routers import product_router
 from routers import user_router
 
+# ── Configurar logging para que sea visible en la terminal ─────────────────────
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s [%(levelname)s] %(name)s — %(message)s",
+    datefmt="%H:%M:%S",
+)
 logger = logging.getLogger("aurastock")
 
 DEFAULT_ORIGINS = [
@@ -20,6 +26,11 @@ DEFAULT_ORIGINS = [
     "http://127.0.0.1:4200",
     "http://localhost:4300",
     "http://127.0.0.1:4300",
+    # Orígenes del WebView de Tauri en producción (Windows usa http://tauri.localhost)
+    "tauri://localhost",
+    "http://tauri.localhost",
+    "https://tauri.localhost",
+    "asset://localhost",
 ]
 
 

@@ -1,4 +1,5 @@
 import logging
+import traceback
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -24,6 +25,7 @@ router = APIRouter(prefix="/users", tags=["Users"])
 
 @router.post("/register", response_model=UserResponse)
 def register(user_in: UserCreate, db: Session = Depends(get_db)):
+    # ── Verificaciones de unicidad ─────────────────────────────────────────
     if user_crud.get_user_by_email(db, user_in.email):
         raise HTTPException(status_code=400, detail="El email ya está registrado")
     if user_crud.get_user_by_username(db, user_in.username):
@@ -31,18 +33,47 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
 
     try:
         ensure_oracle_sequences()
-        return user_crud.create_user(db, user_in)
-    except IntegrityError:
+        new_user = user_crud.create_user(db, user_in)
+        logger.info("Usuario registrado exitosamente: %s (id=%s)", new_user.email, new_user.id)
+        return new_user
+
+    except IntegrityError as exc:
         db.rollback()
+        # ── Log detallado del error de integridad ──────────────────────────
+        logger.error(
+            "[REGISTER] IntegrityError al registrar '%s': %s",
+            user_in.email,
+            exc.orig,
+        )
         raise HTTPException(
             status_code=400,
             detail="El email o nombre de usuario ya está registrado",
         )
-    except SQLAlchemyError:
+
+    except SQLAlchemyError as exc:
         db.rollback()
+        # ── Log detallado del error de SQLAlchemy/Oracle ───────────────────
+        logger.error(
+            "[REGISTER] SQLAlchemyError al registrar '%s':\n%s",
+            user_in.email,
+            traceback.format_exc(),
+        )
         raise HTTPException(
             status_code=500,
-            detail="Error de conexión con la base de datos.",
+            detail=f"Error de base de datos al registrar usuario: {str(exc.orig) if hasattr(exc, 'orig') else str(exc)}",
+        )
+
+    except Exception as exc:
+        db.rollback()
+        # ── Captura cualquier otro error inesperado ────────────────────────
+        logger.error(
+            "[REGISTER] Error inesperado al registrar '%s':\n%s",
+            user_in.email,
+            traceback.format_exc(),
+        )
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error inesperado: {str(exc)}",
         )
 
 
@@ -56,9 +87,12 @@ def login(user_in: UserLogin, db: Session = Depends(get_db)):
             raise HTTPException(status_code=400, detail="Credenciales inválidas")
 
         return user
+
     except HTTPException:
         raise
-    except SQLAlchemyError:
+
+    except SQLAlchemyError as exc:
+        logger.error("[LOGIN] SQLAlchemyError: %s", traceback.format_exc())
         raise HTTPException(
             status_code=500,
             detail="Error de conexión con la base de datos.",
@@ -72,17 +106,20 @@ def update_logo(user_id: int, logo_in: UserLogoUpdate, db: Session = Depends(get
         if not user:
             raise HTTPException(status_code=404, detail="Usuario no encontrado")
         return user
+
     except HTTPException:
         raise
-    except SQLAlchemyError:
+
+    except SQLAlchemyError as exc:
         db.rollback()
+        logger.error("[UPDATE_LOGO] SQLAlchemyError: %s", traceback.format_exc())
         raise HTTPException(
             status_code=500,
             detail="Error de conexión con la base de datos.",
         )
 
 
-# ── Password Recovery ─────────────────────────────────────────────────────────
+# ── Password Recovery ──────────────────────────────────────────────────────────
 
 @router.post("/forgot-password", status_code=200)
 def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db)):
@@ -98,7 +135,6 @@ def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db
     try:
         user = user_crud.get_user_by_email(db, payload.email)
         if not user:
-            # Respuesta genérica por seguridad (no revelar si el email existe)
             return generic_response
 
         token = user_crud.create_reset_token(db, user.id)
@@ -108,12 +144,14 @@ def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db
 
     except SQLAlchemyError:
         db.rollback()
+        logger.error("[FORGOT_PASSWORD] SQLAlchemyError: %s", traceback.format_exc())
         raise HTTPException(
             status_code=500,
             detail="Error de conexión con la base de datos.",
         )
+
     except Exception as exc:
-        logger.error("Error al enviar correo de recuperación: %s", exc)
+        logger.error("[FORGOT_PASSWORD] Error al enviar correo: %s", traceback.format_exc())
         raise HTTPException(
             status_code=500,
             detail="No se pudo enviar el correo. Verificá las credenciales SMTP en el archivo .env.",
@@ -144,8 +182,10 @@ def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db))
 
     except HTTPException:
         raise
+
     except SQLAlchemyError:
         db.rollback()
+        logger.error("[RESET_PASSWORD] SQLAlchemyError: %s", traceback.format_exc())
         raise HTTPException(
             status_code=500,
             detail="Error de conexión con la base de datos.",
