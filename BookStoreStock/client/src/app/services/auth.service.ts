@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 export interface UserRegisterPayload {
   username: string;
@@ -27,7 +28,7 @@ export interface UserResponse {
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly apiUrl = 'http://127.0.0.1:8000/users/';
+  private readonly apiUrl = `${environment.apiUrl}/users/`;
   private readonly storageKey = 'aurastock_user';
 
   constructor(private http: HttpClient) {}
