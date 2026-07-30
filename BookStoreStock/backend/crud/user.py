@@ -14,11 +14,11 @@ TOKEN_EXPIRY_HOURS = 1
 
 
 def get_user_by_email(db: Session, email: str):
-    return db.query(User).filter(User.email == email).first()
+    return db.query(User).filter(User.email == email).one_or_none()
 
 
 def get_user_by_username(db: Session, username: str):
-    return db.query(User).filter(User.username == username).first()
+    return db.query(User).filter(User.username == username).one_or_none()
 
 
 def create_user(db: Session, user: UserCreate):
@@ -40,7 +40,7 @@ def create_user(db: Session, user: UserCreate):
 
 
 def get_user_by_id(db: Session, user_id: int):
-    return db.query(User).filter(User.id == user_id).first()
+    return db.query(User).filter(User.id == user_id).one_or_none()
 
 
 def update_user_logo(db: Session, user_id: int, company_logo: str):
@@ -95,7 +95,7 @@ def get_valid_reset_token(db: Session, token: str) -> PasswordResetToken | None:
             PasswordResetToken.used == False,  # noqa: E712
             PasswordResetToken.expires_at > now,
         )
-        .first()
+        .one_or_none()
     )
     return record
 

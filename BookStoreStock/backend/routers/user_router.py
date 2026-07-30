@@ -25,11 +25,30 @@ router = APIRouter(prefix="/users", tags=["Users"])
 
 @router.post("/register", response_model=UserResponse)
 def register(user_in: UserCreate, db: Session = Depends(get_db)):
+    # ── Log de diagnóstico ─────────────────────────────────────────────────
+    logger.debug(
+        "[REGISTER] Payload recibido → username=%r, email=%r, company_name=%r",
+        user_in.username,
+        user_in.email,
+        user_in.company_name,
+    )
+
     # ── Verificaciones de unicidad ─────────────────────────────────────────
-    if user_crud.get_user_by_email(db, user_in.email):
-        raise HTTPException(status_code=400, detail="El email ya está registrado")
-    if user_crud.get_user_by_username(db, user_in.username):
-        raise HTTPException(status_code=400, detail="El nombre de usuario ya está en uso")
+    existing_email = user_crud.get_user_by_email(db, user_in.email)
+    if existing_email:
+        logger.warning("[REGISTER] Email ya registrado: %r", user_in.email)
+        raise HTTPException(
+            status_code=400,
+            detail="El correo electrónico ya se encuentra registrado. Iniciá sesión o usá otro correo.",
+        )
+
+    existing_user = user_crud.get_user_by_username(db, user_in.username)
+    if existing_user:
+        logger.warning("[REGISTER] Username ya en uso: %r", user_in.username)
+        raise HTTPException(
+            status_code=400,
+            detail="El nombre de usuario ya está en uso. Elegí otro nombre de usuario.",
+        )
 
     try:
         ensure_oracle_sequences()
@@ -47,7 +66,7 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
         )
         raise HTTPException(
             status_code=400,
-            detail="El email o nombre de usuario ya está registrado",
+            detail="El correo electrónico o nombre de usuario ya se encuentra registrado.",
         )
 
     except SQLAlchemyError as exc:
