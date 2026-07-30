@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    src_tauri_lib::run()
+    aurastock_lib::run()
 }

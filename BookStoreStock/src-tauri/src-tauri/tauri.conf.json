@@ -1,20 +1,23 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "src-tauri",
-  "version": "0.1.0",
-  "identifier": "com.valen.src-tauri",
+  "productName": "AuraStock",
+  "version": "1.0.0",
+  "identifier": "com.aurastock.inventario",
   "build": {
     "beforeDevCommand": "npm --prefix ../client run start",
     "devUrl": "http://localhost:4200",
     "beforeBuildCommand": "npm --prefix ../client run build",
-    "frontendDist": "../client/dist/client/browser"
+    "frontendDist": "../../client/dist/client/browser"
   },
   "app": {
     "windows": [
       {
-        "title": "src-tauri",
-        "width": 800,
-        "height": 600
+        "title": "AuraStock — Inventario",
+        "width": 1280,
+        "height": 800,
+        "minWidth": 960,
+        "minHeight": 600,
+        "center": true
       }
     ],
     "security": {
