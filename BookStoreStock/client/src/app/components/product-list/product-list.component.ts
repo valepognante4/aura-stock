@@ -20,7 +20,7 @@ import { extractHttpError } from '../../utils/http-error.util';
 
 import { formatCurrency } from '../../utils/currency.util';
 
-
+import { ToastService } from '../../services/toast.service';
 
 @Component({
 
@@ -240,7 +240,7 @@ export class ProductListComponent implements OnInit {
 
 
 
-  constructor(private productService: ProductService) {}
+  constructor(private productService: ProductService, private toastService: ToastService) {}
 
 
 
@@ -304,13 +304,15 @@ export class ProductListComponent implements OnInit {
 
         this.deletingProduct = null;
 
+        this.toastService.success('Producto eliminado correctamente.');
+
         this.loadProducts();
 
       },
 
       error: (err) => {
 
-        this.errorMessage.set(extractHttpError(err, 'Error al eliminar el producto.'));
+        this.toastService.error(extractHttpError(err, 'Error al eliminar el producto.'));
 
         this.showDeleteModal.set(false);
 
@@ -344,11 +346,17 @@ export class ProductListComponent implements OnInit {
 
         if (result.errors.length > 0) {
 
-          this.errorMessage.set(
+          this.toastService.warning(
 
-            `Se importaron ${result.created} producto(s). Algunos registros fallaron: ${result.errors.slice(0, 3).join('; ')}`
+            `Se importaron ${result.created} producto(s). Hubo errores: ${result.errors.slice(0, 3).join('; ')}`,
+
+            8000
 
           );
+
+        } else {
+
+          this.toastService.success(`¡Se importaron ${result.created} producto(s) correctamente!`);
 
         }
 
@@ -356,7 +364,7 @@ export class ProductListComponent implements OnInit {
 
       error: (err) => {
 
-        this.errorMessage.set(extractHttpError(err, 'Error al importar productos.'));
+        this.toastService.error(extractHttpError(err, 'Error al importar productos.'));
 
       }
 
@@ -409,6 +417,8 @@ export class ProductListComponent implements OnInit {
     this.showModal.set(false);
 
     this.editingProduct = null;
+    
+    this.toastService.success('Producto guardado correctamente.');
 
     this.loadProducts();
 

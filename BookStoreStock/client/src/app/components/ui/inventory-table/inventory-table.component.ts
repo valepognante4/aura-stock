@@ -1,10 +1,12 @@
-import { Component, Input, Output, EventEmitter, ElementRef, ViewChild, HostListener, OnChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ElementRef, ViewChild, HostListener, OnChanges, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Product, ProductPayload } from '../../../services/product.service';
 import { detectCsvDelimiter, parseCsvLine } from '../../../utils/csv.util';
 import { formatCurrency } from '../../../utils/currency.util';
 import { downloadExcelFile, ExcelColumn } from '../../../utils/excel.util';
+import { ToastService } from '../../../services/toast.service';
+import * as ExcelJS from 'exceljs';
 
 export interface InventoryFilters {
   lowStockOnly: boolean;
@@ -122,7 +124,7 @@ export interface InventoryFilters {
           Exportar Excel
         </button>
 
-        <input #fileInput type="file" accept=".csv,text/csv" class="hidden" (change)="onFileSelected($event)">
+        <input #fileInput type="file" accept=".csv,text/csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="hidden" (change)="onFileSelected($event)">
         <button
           type="button"
           (click)="fileInput.click()"
@@ -149,19 +151,6 @@ export interface InventoryFilters {
         </button>
       </div>
     </div>
-
-    @if (importMessage) {
-      <div
-        class="mb-4 p-3 rounded-lg text-[13px] border"
-        [class.bg-green-100]="importSuccess"
-        [class.border-green-400]="importSuccess"
-        [class.text-green-800]="importSuccess"
-        [class.bg-red-100]="!importSuccess"
-        [class.border-red-400]="!importSuccess"
-        [class.text-red-800]="!importSuccess">
-        {{ importMessage }}
-      </div>
-    }
 
     <!-- TABLE WRAPPER -->
     <div class="bg-surface border border-border rounded-[14px] overflow-hidden shadow-[0_1px_2px_rgba(0,0,0,0.15)]">
@@ -261,12 +250,11 @@ export class InventoryTableComponent implements OnChanges {
   @ViewChild('filtersContainer') filtersContainer?: ElementRef<HTMLElement>;
 
   formatPrice = formatCurrency;
+  private toastService = inject(ToastService);
 
   searchTerm = '';
   showFilters = false;
   displayProducts: Product[] = [];
-  importMessage = '';
-  importSuccess = false;
 
   filters: InventoryFilters = {
     lowStockOnly: false,
@@ -378,43 +366,93 @@ export class InventoryTableComponent implements OnChanges {
       stock: p.stock_quantity,
     }));
 
-    await downloadExcelFile(`inventario_${new Date().toISOString().slice(0, 10)}.xlsx`, 'Inventario', columns, data);
+    try {
+      await downloadExcelFile(`inventario_${new Date().toISOString().slice(0, 10)}.xlsx`, 'Inventario', columns, data);
+      this.toastService.success('El archivo Excel se ha descargado correctamente.');
+    } catch (err) {
+      this.toastService.error('Hubo un problema al exportar el archivo.');
+    }
   }
 
-  onFileSelected(event: Event): void {
+  async onFileSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
 
-    this.importMessage = '';
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        const text = String(reader.result ?? '');
-        const parsed = this.parseCsv(text);
-        if (parsed.length === 0) {
-          this.showImportMessage('El archivo CSV no contiene productos válidos.', false);
-          return;
+    try {
+      let parsedProducts: ProductPayload[] = [];
+      
+      if (file.name.endsWith('.xlsx')) {
+        const arrayBuffer = await file.arrayBuffer();
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.load(arrayBuffer);
+        const worksheet = workbook.worksheets[0];
+        if (worksheet) {
+          parsedProducts = this.parseExcelSheet(worksheet);
         }
-        this.importCsv.emit(parsed);
-      } catch {
-        this.showImportMessage('No se pudo leer el archivo CSV. Verificá el formato.', false);
+      } else {
+        const text = await file.text();
+        parsedProducts = this.parseCsv(text);
       }
+
+      if (parsedProducts.length === 0) {
+        this.toastService.warning('El archivo no contiene productos válidos o está vacío.');
+      } else {
+        this.importCsv.emit(parsedProducts);
+      }
+    } catch (error) {
+      this.toastService.error('Error al leer el archivo. Verificá que el formato sea correcto.');
+    } finally {
       input.value = '';
-    };
-    reader.onerror = () => {
-      this.showImportMessage('Error al leer el archivo.', false);
-      input.value = '';
-    };
-    reader.readAsText(file);
+    }
   }
 
-  showImportMessage(message: string, success: boolean): void {
-    this.importMessage = message;
-    this.importSuccess = success;
-    setTimeout(() => {
-      this.importMessage = '';
-    }, 5000);
+  private parseExcelSheet(worksheet: ExcelJS.Worksheet): ProductPayload[] {
+    const products: ProductPayload[] = [];
+    const headerRow = worksheet.getRow(1).values as any[];
+    
+    // Find column indexes based on headers
+    const findCol = (names: string[]) => {
+      return headerRow.findIndex(h => {
+        if (typeof h !== 'string') return false;
+        const normalized = h.toLowerCase().trim();
+        return names.some(n => normalized.includes(n));
+      });
+    };
+
+    const nameIdx = findCol(['name', 'nombre']) > 0 ? findCol(['name', 'nombre']) : 1;
+    const descIdx = findCol(['description', 'descripcion', 'descripción']) > 0 ? findCol(['description', 'descripcion', 'descripción']) : 2;
+    const netIdx = findCol(['net_price', 'precio_neto', 'precio neto', 'precio']) > 0 ? findCol(['net_price', 'precio_neto', 'precio neto', 'precio']) : 3;
+    const ivaIdx = findCol(['iva_percentage', 'iva']) > 0 ? findCol(['iva_percentage', 'iva']) : 4;
+    const stockIdx = findCol(['stock_quantity', 'stock', 'cantidad']) > 0 ? findCol(['stock_quantity', 'stock', 'cantidad']) : 5;
+
+    worksheet.eachRow((row, rowNumber) => {
+      if (rowNumber === 1) return; // Skip header
+
+      const name = row.getCell(nameIdx).text?.trim();
+      if (!name) return;
+
+      const netPriceVal = row.getCell(netIdx).value;
+      const netPrice = typeof netPriceVal === 'number' ? netPriceVal : Number(String(netPriceVal).replace(',', '.'));
+      
+      if (isNaN(netPrice) || netPrice < 0) return;
+
+      const ivaVal = row.getCell(ivaIdx).value;
+      const iva = typeof ivaVal === 'number' ? ivaVal : Number(String(ivaVal).replace(',', '.'));
+
+      const stockVal = row.getCell(stockIdx).value;
+      const stock = typeof stockVal === 'number' ? stockVal : Number(String(stockVal).replace(',', '.'));
+
+      products.push({
+        name,
+        description: row.getCell(descIdx).text?.trim() || null,
+        net_price: netPrice,
+        iva_percentage: isNaN(iva) ? 21 : iva,
+        stock_quantity: isNaN(stock) ? 0 : Math.max(0, Math.floor(stock)),
+      });
+    });
+
+    return products;
   }
 
   private parseCsv(text: string): ProductPayload[] {

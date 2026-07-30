@@ -7,7 +7,7 @@ export function extractHttpError(err: unknown, fallback: string): string {
   const httpErr = err as { status?: number; error?: { detail?: unknown } };
 
   if (httpErr.status === 0) {
-    return 'No se pudo conectar al servidor. Verificá que el backend esté corriendo en http://127.0.0.1:8000.';
+    return 'No se pudo conectar al servidor. Verificá tu conexión o intentá de nuevo en unos momentos.';
   }
 
   const detail = httpErr.error?.detail;
