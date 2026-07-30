@@ -15,6 +15,7 @@ def ensure_oracle_sequences() -> None:
       v_count NUMBER;
       v_start NUMBER;
     BEGIN
+      -- ── product_id_seq ──────────────────────────────────────────────────────
       SELECT COUNT(*) INTO v_count
       FROM user_sequences
       WHERE sequence_name = 'PRODUCT_ID_SEQ';
@@ -31,6 +32,7 @@ def ensure_oracle_sequences() -> None:
           ' INCREMENT BY 1 NOCACHE NOCYCLE';
       END IF;
 
+      -- ── user_id_seq ─────────────────────────────────────────────────────────
       SELECT COUNT(*) INTO v_count
       FROM user_sequences
       WHERE sequence_name = 'USER_ID_SEQ';
@@ -46,11 +48,29 @@ def ensure_oracle_sequences() -> None:
           'CREATE SEQUENCE user_id_seq START WITH ' || v_start ||
           ' INCREMENT BY 1 NOCACHE NOCYCLE';
       END IF;
+
+      -- ── prt_id_seq (password_reset_tokens) ──────────────────────────────────
+      SELECT COUNT(*) INTO v_count
+      FROM user_sequences
+      WHERE sequence_name = 'PRT_ID_SEQ';
+
+      IF v_count = 0 THEN
+        BEGIN
+          EXECUTE IMMEDIATE 'SELECT NVL(MAX(id), 0) + 1 FROM password_reset_tokens' INTO v_start;
+        EXCEPTION
+          WHEN OTHERS THEN
+            v_start := 1;
+        END;
+        EXECUTE IMMEDIATE
+          'CREATE SEQUENCE prt_id_seq START WITH ' || v_start ||
+          ' INCREMENT BY 1 NOCACHE NOCYCLE';
+      END IF;
     END;
     """
     with engine.begin() as connection:
         connection.execute(text(ddl))
-    logger.info("Secuencias Oracle verificadas: product_id_seq, user_id_seq.")
+    logger.info("Secuencias Oracle verificadas: product_id_seq, user_id_seq, prt_id_seq.")
+
 
 
 def ensure_user_company_columns() -> None:

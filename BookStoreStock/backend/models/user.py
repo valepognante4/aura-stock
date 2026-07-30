@@ -1,15 +1,18 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, ForeignKey
-from sqlalchemy import event
+from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, ForeignKey, Sequence
 from database import Base
 
 
 class User(Base):
     __tablename__ = "users"
 
-    # Oracle creó la tabla con trigger trg_users_id que asigna el ID desde
-    # user_id_seq automáticamente en cada INSERT. SQLAlchemy no debe intentar
-    # resolver la secuencia por su cuenta; simplemente declaramos la PK sin Sequence().
-    id = Column(Integer, primary_key=True, index=True)
+    # SQLAlchemy llama a user_id_seq.NEXTVAL antes de cada INSERT,
+    # evitando ORA-01400 (inserción de NULL en columna NOT NULL).
+    id = Column(
+        Integer,
+        Sequence("user_id_seq", optional=True),
+        primary_key=True,
+        index=True,
+    )
 
     username = Column(String(100), unique=True, index=True, nullable=False)
     email    = Column(String(150), unique=True, index=True, nullable=False)
@@ -27,8 +30,13 @@ class User(Base):
 class PasswordResetToken(Base):
     __tablename__ = "password_reset_tokens"
 
-    # Igual que User: el trigger asigna el ID; SQLAlchemy no maneja la secuencia.
-    id      = Column(Integer, primary_key=True, index=True)
+    # Igual que User: SQLAlchemy obtiene el NEXTVAL de la secuencia antes del INSERT.
+    id = Column(
+        Integer,
+        Sequence("prt_id_seq", optional=True),
+        primary_key=True,
+        index=True,
+    )
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     token   = Column(String(255), unique=True, nullable=False, index=True)
     expires_at = Column(DateTime, nullable=False)
