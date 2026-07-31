@@ -1,4 +1,7 @@
 import * as ExcelJS from 'exceljs';
+import { isTauri } from '@tauri-apps/api/core';
+import { save } from '@tauri-apps/plugin-dialog';
+import { writeFile } from '@tauri-apps/plugin-fs';
 
 export interface ExcelColumn {
   header: string;
@@ -56,14 +59,34 @@ export async function downloadExcelFile(
 
   // Export
   const buffer = await workbook.xlsx.writeBuffer();
-  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
   
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  link.click();
-  URL.revokeObjectURL(url);
+  if (isTauri()) {
+    try {
+      const filePath = await save({
+        defaultPath: filename,
+        filters: [{ name: 'Excel Workbook', extensions: ['xlsx'] }]
+      });
+      if (filePath) {
+        await writeFile(filePath, new Uint8Array(buffer as ArrayBuffer));
+      } else {
+        throw new Error('Export canceled');
+      }
+    } catch (e) {
+      if (e instanceof Error && e.message === 'Export canceled') {
+        throw e;
+      }
+      console.error('Tauri save error:', e);
+      throw new Error('Error al guardar el archivo');
+    }
+  } else {
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
 }
 
 export async function downloadExcelFileFromRows(
@@ -111,12 +134,32 @@ export async function downloadExcelFileFromRows(
 
   // Export
   const buffer = await workbook.xlsx.writeBuffer();
-  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
   
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  link.click();
-  URL.revokeObjectURL(url);
+  if (isTauri()) {
+    try {
+      const filePath = await save({
+        defaultPath: filename,
+        filters: [{ name: 'Excel Workbook', extensions: ['xlsx'] }]
+      });
+      if (filePath) {
+        await writeFile(filePath, new Uint8Array(buffer as ArrayBuffer));
+      } else {
+        throw new Error('Export canceled');
+      }
+    } catch (e) {
+      if (e instanceof Error && e.message === 'Export canceled') {
+        throw e;
+      }
+      console.error('Tauri save error:', e);
+      throw new Error('Error al guardar el archivo');
+    }
+  } else {
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
 }

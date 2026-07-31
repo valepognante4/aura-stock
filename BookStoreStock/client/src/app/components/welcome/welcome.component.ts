@@ -21,7 +21,7 @@ import { FeatureCardComponent } from '../ui/feature-card/feature-card.component'
           <div class="flex flex-col">
             <div class="inline-flex items-center gap-2 px-[14px] py-[4px] bg-accent-bg border border-accent-border rounded-[100px] mb-8 self-start">
               <span class="w-[6px] h-[6px] bg-accent-light rounded-full"></span>
-              <span class="text-[11.5px] uppercase tracking-[0.06em] text-accent-light font-semibold">v2.0 Beta</span>
+              <span class="text-[11.5px] uppercase tracking-[0.06em] text-accent-light font-semibold">ONLINE</span>
             </div>
             
             <h1 class="text-[54px] font-[800] tracking-[-0.035em] leading-[1.06] text-txt-primary mb-6">
